@@ -23,7 +23,8 @@ Status values: `DONE`, `IN REVIEW` (PR open, not merged), `NEXT`, `PLANNED`, `BL
 | --- | --- |
 | Milestone | v0.1.0 |
 | Next task | **TS-005 — OpenTelemetry SanitizingSpanExporter** |
-| Blocked on | PRs #1, #2 and #3 need merging by the owner before TS-005 branches cleanly |
+| Blocked on | Nothing |
+| `main` | Green locally and in CI: 267 tests, 99.64% coverage, Python 3.10-3.13 |
 | Last verified | 2026-09-06 |
 
 ---
@@ -39,31 +40,37 @@ Evidence: commit `1267fec`.
 
 ---
 
-### TS-002 — Product brief, research and decision records · `IN REVIEW` (PR #1)
+### TS-002 — Product brief, research and decision records · `DONE`
 
 Problem statement, users, v0.1.0 boundary, eleven acceptance criteria, the research evidence
 base, architecture, threat model, roadmap, open-source readiness checklist, ADRs 0001-0005.
 
-Evidence: PR #1. Merge before TS-003.
+Evidence: PR #1, merged as `978738b`.
 
 ---
 
-### TS-003 — Core detection and redaction engine · `IN REVIEW` (PR #2)
+### TS-003 — Core detection and redaction engine · `DONE`
 
 The domain: bounded structure-preserving walk, 19-rule pattern pack, checksum verifiers,
 entropy scoring, key-name escalation, redaction actions, findings, fail-closed behaviour.
 Package scaffold and the full quality gate ship with it.
 
-Evidence: PR #2. `make check` green; 249 tests, 99.64% coverage; CI green on Python
-3.10-3.13. Merge after PR #1.
+Also fixes a false positive found by dogfooding: filesystem paths and URLs were reported as
+generic high-entropy secrets, because `/` was in the entropy detector's token alphabet.
+
+Evidence: PR #2, merged as `b70478a`. `make check` green; CI green on Python 3.10-3.13.
 
 ---
 
-### TS-004 — Tracker and agent handoff system · `IN REVIEW` (PR #3)
+### TS-004 — Tracker and agent handoff system · `DONE`
 
 This file, plus a `prompt.txt` that any agent can be started from by pasting its contents.
 
-Evidence: PR #3. Merge after PR #2.
+`tests/test_handoff.py` keeps the two in step: exactly one task is `NEXT`, the handoff names
+that same task, every path in its repository map exists, and the tracker's links resolve.
+
+Evidence: PR #3, merged as `a4480a6`, plus PR #4 which corrected the state both files
+described once they were merged.
 
 ---
 
@@ -258,7 +265,9 @@ Newest first. One line per merged change; detail belongs in the PR and in Git.
 
 | Date | Task | Change | Evidence |
 | --- | --- | --- | --- |
-| 2026-09-06 | TS-004 | Tracker and paste-and-go agent handoff | PR #3, open |
-| 2026-09-06 | TS-003 | Core engine, package and quality gate | PR #2, open, CI green |
-| 2026-09-06 | TS-002 | Brief, research, architecture, threat model, ADRs | PR #1, open |
+| 2026-09-06 | TS-004 | Tracker and handoff corrected after merge | PR #4 |
+| 2026-09-06 | TS-004 | Tracker and paste-and-go agent handoff | PR #3, `a4480a6` |
+| 2026-09-06 | TS-003 | Path and URL entropy false positive fixed | `7939d4c` |
+| 2026-09-06 | TS-003 | Core engine, package and quality gate | PR #2, `b70478a` |
+| 2026-09-06 | TS-002 | Brief, research, architecture, threat model, ADRs | PR #1, `978738b` |
 | 2026-09-06 | TS-001 | Governance baseline, remote `main` established | `1267fec` |

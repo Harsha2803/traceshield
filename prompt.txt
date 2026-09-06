@@ -126,27 +126,24 @@ BRANCH AND PR
     is red. Report authentication, review or branch-protection problems as
     blockers rather than working around them.
 
-  NOTE FOR THIS REPOSITORY: the agent may not be permitted to merge. If merging
-  is blocked, say so explicitly and ask the owner to merge. Do not force it.
+  MERGING: merge your own PR once CI is green, using a merge commit, then fast
+  forward local main and delete the branch. If your environment refuses the
+  merge, say so explicitly and ask the owner rather than working around it.
+  Use a merge commit rather than squash whenever PRs are stacked, because it is
+  the only method that keeps each descendant PR's diff correct.
 
 
 --------------------------------------------------------------------------------
 CURRENT STATE — verified 2026-09-06, re-verify before relying on it
 --------------------------------------------------------------------------------
 
-Repository: Harsha2803/traceshield, private, remote main exists.
+Repository: Harsha2803/traceshield, private. Everything below is merged into
+main; there are no open pull requests. main is green locally and in CI.
 
-Open pull requests, stacked. They must be merged in this order, by the owner:
+Start your work by branching from an up-to-date main.
 
-  #1  docs/product-brief   -> main               brief, research, architecture,
-                                                 threat model, roadmap, ADRs 1-5
-  #2  feat/core-engine     -> docs/product-brief core engine, package, gate.
-                                                 CI green on Python 3.10-3.13
-  #3  docs/tracker         -> feat/core-engine   tracker and this handoff
-
-  GitHub retargets each PR onto main automatically as the one below it merges.
-
-What demonstrably works today (verified by `make check`, exit 0):
+What demonstrably works today (verified by `make check`, exit 0, and by CI on
+Python 3.10, 3.11, 3.12 and 3.13):
 
   - traceshield.Sanitizer sanitizes attribute values: strings, JSON-encoded
     documents, mappings and sequences. Structure survives; only sensitive leaves
@@ -155,14 +152,16 @@ What demonstrably works today (verified by `make check`, exit 0):
     digest — and no field that can hold the value itself.
   - Detection combines four deterministic signals: a 19-rule pattern pack,
     checksum verifiers (Luhn, IBAN mod-97, Verhoeff, JWT header), charset-aware
-    entropy scoring with UUID and timestamp exclusions, and key-name escalation.
+    entropy scoring that excludes UUIDs, timestamps, filesystem paths, URLs and
+    dotted names, and key-name escalation.
   - Actions: mask, partial, hash, drop. Fail-closed on budget breach, detector
     failure and unexpected internal error. Output is idempotent and deterministic.
-  - Gate: ruff format and lint, mypy --strict, 249 tests, 99.64% coverage against
+  - Gate: ruff format and lint, mypy --strict, 267 tests, 99.64% coverage against
     a 90% floor, bandit, pip-audit, sdist and wheel build. CI runs the same on
     Python 3.10 through 3.13, with actions pinned by commit SHA.
   - tests/test_readme.py executes the README quickstart and compares it against
-    the documented output, so docs and behaviour cannot drift.
+    the documented output, and tests/test_handoff.py keeps this file and the
+    tracker in step, so neither the docs nor this handoff can drift silently.
 
 Known gaps — do not describe any of these as working:
 
@@ -172,6 +171,9 @@ Known gaps — do not describe any of these as working:
   - Non-string leaves are not scanned, so an identifier stored as a JSON number is
     missed. Replacing it would change the node's type.
   - Base64 blob parts are dropped rather than scanned.
+  - Entropy scoring skips paths, URLs and dotted names, so an unnamed base64
+    secret containing several slashes can be missed unless a named rule or its
+    key name catches it. Recorded in ADR 0004.
   - No latency measurement exists anywhere. Do not put a number in the README,
     the package description or a commit message until TS-007 produces one.
   - Nothing is published to PyPI. The name `traceshield` was unclaimed as of
@@ -208,8 +210,7 @@ The two criteria most likely to be got wrong:
 OpenTelemetry is an optional extra. `import traceshield` must keep working with
 opentelemetry-sdk absent.
 
-If PRs #1 to #3 are still unmerged when you start, branch from feat/core-engine
-or docs/tracker rather than main, and say in your PR that it is stacked.
+Branch from an up-to-date main. Nothing is stacked or pending.
 
 
 --------------------------------------------------------------------------------

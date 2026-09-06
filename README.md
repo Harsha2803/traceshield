@@ -111,6 +111,9 @@ digest of what was removed rather than the value itself.
 - Non-string leaves are not scanned. An identifier stored as a JSON number is missed, because
   replacing it with a placeholder would change the node's type.
 - Base64 blob parts are not scanned.
+- Entropy scoring skips paths, URLs and dotted names to avoid flooding on ordinary tool
+  arguments, so an unnamed base64 secret containing several slashes can be missed unless a
+  named rule or its key name catches it.
 - These are limits of the v0.1 design, not bugs. See
   [`docs/ThreatModel.md`](docs/ThreatModel.md).
 

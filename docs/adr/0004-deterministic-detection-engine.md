@@ -38,7 +38,12 @@ The v0.1 engine is deterministic and dependency-free, combining four signals:
    in ten, so a payment card retries only at separator boundaries, while IBAN's mod-97
    accepts roughly one in ninety-seven and can retry character by character.
 3. **Shannon entropy.** Charset-aware thresholds for unnamed high-randomness strings,
-   applied only to leaves that survive cheaper filters.
+   applied only to leaves that survive cheaper filters. The exclusions carry more weight
+   than the threshold: UUIDs, epoch timestamps, filesystem paths, URLs and dotted names are
+   rejected outright, because a trace is full of them and flagging them is the fastest way
+   to make a redaction tool worth disabling. The cost is a documented blind spot for
+   unpadded standard base64 containing several slashes, which no named rule and no key name
+   covers.
 4. **Key-name heuristics.** In structured payloads, a key such as `api_key`, `password`,
    `token`, `secret`, `authorization` or `credential` raises the sensitivity of its subtree.
    This is what makes tool call arguments tractable, since their values are frequently

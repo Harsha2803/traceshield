@@ -64,3 +64,29 @@ class TestEntropySettings:
     def test_thresholds_are_tunable(self) -> None:
         strict = EntropyDetector(EntropySettings(min_length=200))
         assert not tuple(strict.detect(f"token {HIGH_ENTROPY_TOKEN}", CONTEXT))
+
+
+class TestPathAndUrlExclusion:
+    """Regression tests for a false positive found by running the detector over this
+    repository's own handoff document: filesystem paths and URLs were reported as
+    high-entropy secrets. Tool arguments are full of both."""
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "reading /home/shreeharsha/Personal/Projects/Resume_001/traceshield now",
+            "cloned from https://github.com/Harsha2803/traceshield.git ok",
+            "wrote artifacts/build_2026/output_v3/report_final.json to disk",
+            "GET https://api.example.com/v2/accounts/91827364/transactions",
+            "module traceshield.core.detectors.entropy loaded",
+        ],
+    )
+    def test_paths_and_urls_are_not_credentials(self, text: str) -> None:
+        assert not detects(text)
+
+    def test_a_real_base64_secret_is_still_caught(self) -> None:
+        assert detects(f"authorization blob {HIGH_ENTROPY_TOKEN} attached")
+
+    def test_padded_base64_survives_the_path_heuristic(self) -> None:
+        # Padding is positive evidence, so slashes do not disqualify it.
+        assert detects("blob aG9wZWZ1/Gx5UmFu/G9tMDkzODQ3NTYyMzQ1Njc4== attached")

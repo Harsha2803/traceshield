@@ -2,8 +2,8 @@
 
 Entropy is the weakest of the four signals in ADR 0004 and the easiest to turn into noise,
 so this detector is deliberately narrow. The exclusions matter more than the threshold: a
-trace is full of UUIDs, trace identifiers and epoch timestamps, and flagging those would
-train users to disable the tool.
+trace is full of UUIDs, trace identifiers, epoch timestamps, filesystem paths and URLs, and
+flagging those would train users to disable the tool.
 """
 
 from __future__ import annotations
@@ -19,7 +19,10 @@ from traceshield.core.model import Category, Confidence, DetectionSpan, RuleId, 
 
 HIGH_ENTROPY_RULE_ID = RuleId("secret.generic.high_entropy")
 
-_TOKEN_RE = re.compile(r"[A-Za-z0-9+/=_-]{16,}")
+# "." and "/" are in the alphabet so that a path, hostname or URL is captured as one token
+# and can be rejected as a whole. Without them the scanner sees the fragments between the
+# separators and cannot tell a path from a credential.
+_TOKEN_RE = re.compile(r"[A-Za-z0-9+/=_.-]{16,}")
 _UUID_RE = re.compile(
     r"\A[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\Z"
 )
@@ -103,6 +106,16 @@ class EntropyDetector:
             return False
         if token.isdigit():
             # Epoch timestamps, counts and ports. Never credential material on their own.
+            return False
+        if "." in token:
+            # Base64, base64url and hex have no dot in their alphabets, so a dotted token is
+            # a hostname, filename, version or dotted path rather than credential material.
+            # Structured secrets that do contain dots, such as JWTs, have named rules.
+            return False
+        if token.count("/") > 1 and not token.endswith("="):
+            # Path-like. Agent tool arguments are full of paths and URLs, and flagging them
+            # is the fastest way to make a redaction tool worth disabling. Base64 padding is
+            # accepted as positive evidence that overrides this.
             return False
         has_digit = any(character.isdigit() for character in token)
         has_alpha = any(character.isalpha() for character in token)

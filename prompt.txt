@@ -4,19 +4,37 @@ You are picking up TraceShield at:
 
 Current handoff date: 2026-09-06.
 
+What TraceShield is (approved 2026-09-06, canonical text in docs/ProductBrief.md):
+
+  An open-source Python package that sanitizes LLM and agent telemetry inside the export
+  path, before it reaches an observability platform. It detects and redacts secrets, PII and
+  sensitive tool arguments, preserves trace structure so traces stay debuggable, and records
+  an auditable decision for every redaction.
+
+Settled decisions (do not re-open without a superseding ADR):
+
+  - ADR 0001: Python library on PyPI as `traceshield`, Python 3.10-3.13, hatchling +
+    hatch-vcs, uv, ruff/mypy --strict/pytest/hypothesis/bandit/pip-audit gate. Core has zero
+    runtime dependencies; OpenTelemetry support is the `traceshield[otel]` extra.
+  - ADR 0002: Apache-2.0, with NOTICE and a project-name statement.
+  - ADR 0003: integrate as a `SanitizingSpanExporter` wrapping any OTel `SpanExporter`.
+    A SpanProcessor cannot work: `ReadableSpan` is immutable at `on_end`.
+  - ADR 0004: deterministic detection for v0.1 (regex pack + checksum verifiers + Shannon
+    entropy + key-name heuristics). No ML or NER; Presidio stays a later optional extra.
+  - ADR 0005: repository stays private until v0.1.0 is complete and green, then goes public
+    and publishes 0.1.0 to PyPI via Trusted Publishing (OIDC, no API tokens). No placeholder
+    release. `traceshield` was unclaimed on PyPI as of 2026-09-06.
+
 Repository state at this handoff:
 
-  - The local Git repository exists on `main` and has no commits yet.
-  - The private GitHub repository exists at `Harsha2803/traceshield`.
-  - The GitHub remote is intentionally empty: no commit or branch has been pushed.
-  - The local repo-local author is `Cheella Sree Harsha
-    <cheellasreeharsha2803@gmail.com>` and `origin` is
-    `https://github.com/Harsha2803/traceshield.git`.
-  - The local uncommitted baseline contains governance only: cross-agent instructions,
-    coding standards, GitHub workflow, employment separation, a PR template, and ignores.
-  - No product brief, architecture, implementation stack, milestone plan, or license has
-    been approved. Do not infer or silently select them.
-  - No application code, dependency, CI workflow, infrastructure, or test suite exists.
+  - Branch `main` exists locally and on `origin`, with the bootstrap governance commit.
+  - The GitHub repository `Harsha2803/traceshield` is private and no longer empty.
+  - Branch `docs/product-brief` carries the product brief, research, architecture, threat
+    model, roadmap, open-source readiness checklist and ADRs 0001-0005.
+  - No application code, dependency, CI workflow, package configuration or test suite exists
+    yet. Nothing described in the brief is implemented.
+  - Repo-local author is `Cheella Sree Harsha <cheellasreeharsha2803@gmail.com>` and
+    `origin` is `https://github.com/Harsha2803/traceshield.git`.
 
 If the project owner says only "pick up TraceShield" or "continue":
 
@@ -24,19 +42,20 @@ If the project owner says only "pick up TraceShield" or "continue":
   2. Inspect `git status --short --branch`, the current branch, recent commits, remotes, and
      any open PR before relying on this handoff. Live repository state wins if this file is
      stale; update this file as part of the task.
-  3. Read `README.md`, then the active project brief/tracker once one exists, then
-     `docs/CodingStandards.md`, `docs/GitHubWorkflow.md`, and relevant ADRs.
-  4. If no specific task or approved next task exists, stop and ask the owner what outcome
-     to build. Do not invent scope merely to keep working.
-  5. If a task exists, implement one complete, demonstrable slice and follow the verification,
-     documentation, branch, PR, and completion rules in `AGENTS.md`.
+  3. Read `README.md`, `docs/ProductBrief.md`, `docs/Architecture.md`,
+     `docs/ThreatModel.md`, then `docs/CodingStandards.md`, `docs/GitHubWorkflow.md`, and
+     the ADRs.
+  4. Work only inside the v0.1.0 boundary in `docs/ProductBrief.md` section 6. Its
+     acceptance criteria are in section 7 and are not negotiable downward.
+  5. Implement one complete, demonstrable slice and follow the verification, documentation,
+     branch, PR, and completion rules in `AGENTS.md`.
 
 Current next action:
 
-  - Wait for the project owner to define what TraceShield should do. The next session should
-    turn that request into a focused project brief, explicit MVP boundary, acceptance
-    criteria, and only then an architecture/implementation plan.
-  - Do not create application scaffolding until that product brief has been agreed.
+  - Slice 1 of v0.1.0 per docs/Roadmap.md: the core engine. Package scaffold and the full
+    quality gate ship together with a working `Sanitizer` that detects and redacts over a
+    bounded structure-preserving walk and emits findings. Scaffold alone is not a slice.
+  - Then slice 2 (SanitizingSpanExporter), slice 3 (CLI), slice 4 (release).
 
 Git and GitHub rules:
 
@@ -46,8 +65,8 @@ Git and GitHub rules:
   - Never use `harshaJKT`, an `@jktech.com` email, or an employer-owned remote.
   - Before every push or GitHub mutation, verify the active identity and origin using the
     exact preflight in `docs/GitHubWorkflow.md`.
-  - The first reviewed bootstrap commit may establish remote `main`. Afterward, use one
-    scoped branch and pull request per logical change; never push directly to `main`.
+  - The bootstrap commit that established remote `main` is done. From now on, one scoped
+    branch and pull request per logical change; never push directly to `main`.
   - A task is not complete while its finished work is only local, its PR is draft, or CI is
     red, unless the owner explicitly requested local-only work.
 
@@ -59,6 +78,8 @@ Data and employment separation:
     repository. They require an explicit request plus review and sanitization first.
   - Use only synthetic or explicitly sanitized fixtures, traces, screenshots, and benchmark
     data. Never put secrets, raw prompts, PII, tokens, or production traces in this handoff.
+  - Detection-rule fixtures must be synthetic values that pass the relevant checksum, never
+    a real credential, and never a real identifier belonging to a person.
 
 How to maintain this handoff:
 
@@ -78,9 +99,14 @@ Canonical files currently present:
   - `AGENTS.md`: repository-wide operating rules for humans and agents.
   - `CLAUDE.md`: Claude entrypoint pointing to the canonical rules and this handoff.
   - `.cursor/rules/project.mdc`: always-on Cursor entrypoint.
+  - `docs/ProductBrief.md`: approved scope, v0.1.0 boundary, acceptance criteria.
+  - `docs/Research.md`: evidence base and landscape, with sources and verification date.
+  - `docs/Architecture.md`: module structure, domain model, pipeline, invariants.
+  - `docs/ThreatModel.md`: trust boundaries, threats, mitigations, non-goals.
+  - `docs/Roadmap.md`: committed v0.1.0 milestone and later intent.
+  - `docs/OpenSourceReadiness.md`: checklist gating the public flip.
+  - `docs/adr/`: ADRs 0001-0005.
   - `docs/CodingStandards.md`: engineering, testing, privacy, and completion standards.
   - `docs/GitHubWorkflow.md`: identity, push, branch, PR, and merge protocol.
   - `docs/EmploymentSeparation.md`: personal-project and employer-IP boundary.
   - `docs/RulesTransfer.md`: what was and was not carried over from Mnemos.
-
-There is currently no implementation task to execute beyond the owner's next instruction.

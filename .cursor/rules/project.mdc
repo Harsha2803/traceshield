@@ -1,0 +1,14 @@
+---
+description: Canonical TraceShield repository rules
+alwaysApply: true
+---
+
+Before editing this repository, read and follow:
+
+- `prompt.txt`
+- `AGENTS.md`
+- `docs/CodingStandards.md`
+- `docs/GitHubWorkflow.md`
+
+These files are canonical. The product brief and stack are not yet decided, so do not
+silently introduce foundational product or architecture decisions.

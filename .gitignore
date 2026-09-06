@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.python-version
+
+# Python tooling
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+.hypothesis/
+
+# Node / frontend
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+.turbo/
+coverage/
+
+# Secrets and local configuration
+# Only example environment files may be tracked.
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.p12
+secrets/
+.secrets/
+
+# Runtime data and potentially sensitive trace exports
+.data/
+data/
+volumes/
+logs/
+traces/
+exports/
+*.log
+*.db
+*.sqlite
+*.sqlite3
+
+# OS and editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.shared.json
+
+# Personal documents at repository root
+/*.pdf
+/*resume*
+/*Resume*

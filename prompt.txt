@@ -1,0 +1,86 @@
+You are picking up TraceShield at:
+
+  /home/shreeharsha/Personal/Projects/Resume_001/traceshield
+
+Current handoff date: 2026-09-06.
+
+Repository state at this handoff:
+
+  - The local Git repository exists on `main` and has no commits yet.
+  - The private GitHub repository exists at `Harsha2803/traceshield`.
+  - The GitHub remote is intentionally empty: no commit or branch has been pushed.
+  - The local repo-local author is `Cheella Sree Harsha
+    <cheellasreeharsha2803@gmail.com>` and `origin` is
+    `https://github.com/Harsha2803/traceshield.git`.
+  - The local uncommitted baseline contains governance only: cross-agent instructions,
+    coding standards, GitHub workflow, employment separation, a PR template, and ignores.
+  - No product brief, architecture, implementation stack, milestone plan, or license has
+    been approved. Do not infer or silently select them.
+  - No application code, dependency, CI workflow, infrastructure, or test suite exists.
+
+If the project owner says only "pick up TraceShield" or "continue":
+
+  1. Read this file and `AGENTS.md` completely.
+  2. Inspect `git status --short --branch`, the current branch, recent commits, remotes, and
+     any open PR before relying on this handoff. Live repository state wins if this file is
+     stale; update this file as part of the task.
+  3. Read `README.md`, then the active project brief/tracker once one exists, then
+     `docs/CodingStandards.md`, `docs/GitHubWorkflow.md`, and relevant ADRs.
+  4. If no specific task or approved next task exists, stop and ask the owner what outcome
+     to build. Do not invent scope merely to keep working.
+  5. If a task exists, implement one complete, demonstrable slice and follow the verification,
+     documentation, branch, PR, and completion rules in `AGENTS.md`.
+
+Current next action:
+
+  - Wait for the project owner to define what TraceShield should do. The next session should
+    turn that request into a focused project brief, explicit MVP boundary, acceptance
+    criteria, and only then an architecture/implementation plan.
+  - Do not create application scaffolding until that product brief has been agreed.
+
+Git and GitHub rules:
+
+  - Personal account only: `Harsha2803`.
+  - Personal repo-local identity only: `Cheella Sree Harsha
+    <cheellasreeharsha2803@gmail.com>`.
+  - Never use `harshaJKT`, an `@jktech.com` email, or an employer-owned remote.
+  - Before every push or GitHub mutation, verify the active identity and origin using the
+    exact preflight in `docs/GitHubWorkflow.md`.
+  - The first reviewed bootstrap commit may establish remote `main`. Afterward, use one
+    scoped branch and pull request per logical change; never push directly to `main`.
+  - A task is not complete while its finished work is only local, its PR is draft, or CI is
+    red, unless the owner explicitly requested local-only work.
+
+Data and employment separation:
+
+  - Do not read, copy, adapt, or commit employer code, schemas, prompts, configuration,
+    credentials, internal documentation, customer data, traces, or proprietary vocabulary.
+  - Do not copy the open Langfuse JSON exports from the user's Downloads directory into the
+    repository. They require an explicit request plus review and sanitization first.
+  - Use only synthetic or explicitly sanitized fixtures, traces, screenshots, and benchmark
+    data. Never put secrets, raw prompts, PII, tokens, or production traces in this handoff.
+
+How to maintain this handoff:
+
+  - Update `prompt.txt` in the same commit as every completed task.
+  - Record the handoff date, current branch, last merged commit/PR, what demonstrably works,
+    exact verification evidence, known gaps/blockers, settled decisions, and one explicit
+    next task.
+  - Replace facts that are no longer true. This file is a current operational handoff, not a
+    chronological journal; history belongs in Git, the tracker, and ADRs.
+  - Reference canonical documents instead of duplicating long designs here. Keep enough
+    context that a fresh agent knows what to read, what is true, and what it may do next.
+  - Never describe planned behavior as implemented and never preserve benchmark claims after
+    their code path changes without rerunning them.
+
+Canonical files currently present:
+
+  - `AGENTS.md`: repository-wide operating rules for humans and agents.
+  - `CLAUDE.md`: Claude entrypoint pointing to the canonical rules and this handoff.
+  - `.cursor/rules/project.mdc`: always-on Cursor entrypoint.
+  - `docs/CodingStandards.md`: engineering, testing, privacy, and completion standards.
+  - `docs/GitHubWorkflow.md`: identity, push, branch, PR, and merge protocol.
+  - `docs/EmploymentSeparation.md`: personal-project and employer-IP boundary.
+  - `docs/RulesTransfer.md`: what was and was not carried over from Mnemos.
+
+There is currently no implementation task to execute beyond the owner's next instruction.

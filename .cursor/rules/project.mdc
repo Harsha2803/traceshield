@@ -6,6 +6,7 @@ alwaysApply: true
 Before editing this repository, read and follow:
 
 - `prompt.txt`
+- `docs/Tracker.md`
 - `AGENTS.md`
 - `docs/ProductBrief.md`
 - `docs/Architecture.md`

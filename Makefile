@@ -10,6 +10,13 @@ help:
 	@echo "check      the full gate: format, lint, types, tests, security, audit, build"
 	@echo "format     rewrite files to the canonical format"
 	@echo "test       run the test suite with coverage"
+	@echo "handoff    print prompt.txt, the paste-and-go agent handoff"
+
+# The handoff is meant to be pasted whole into a fresh agent session. Pipe it to a
+# clipboard tool if you have one, for example:  make handoff | xclip -sel clip
+.PHONY: handoff
+handoff:
+	@cat prompt.txt
 
 .PHONY: setup
 setup:

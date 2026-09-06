@@ -8,12 +8,16 @@ it. They are requirements, not suggestions.
 Read, in order:
 
 1. `prompt.txt` — the living handoff and current repository state
-2. `README.md`
-3. `docs/ProductBrief.md` — the approved scope, v0.1.0 boundary and acceptance criteria
-4. `docs/Architecture.md` and `docs/ThreatModel.md`
-5. `docs/CodingStandards.md`
-6. `docs/GitHubWorkflow.md`
-7. `docs/adr/` and the files being changed
+2. `docs/Tracker.md` — the agenda; the single task marked `NEXT` is the one to do
+3. `README.md`
+4. `docs/ProductBrief.md` — the approved scope, v0.1.0 boundary and acceptance criteria
+5. `docs/Architecture.md` and `docs/ThreatModel.md`
+6. `docs/CodingStandards.md`
+7. `docs/GitHubWorkflow.md`
+8. `docs/adr/` and the files being changed
+
+`prompt.txt` is written to be pasted whole into a fresh agent session. It is the entry
+point for every session, whichever tool is being used.
 
 Product scope, stack, license, integration surface, detection approach and release process
 are settled in `docs/ProductBrief.md` and ADRs 0001-0005. Work outside the v0.1.0 boundary
@@ -47,10 +51,13 @@ existing one; write an ADR, and supersede rather than edit a decided one.
 10. User-facing capabilities must ship as a usable end-to-end slice. Infrastructure may be
     built as part of that slice, but it is not a resume milestone on its own.
 11. Do not hand-edit generated files. Change their source and regenerate them.
-12. Finish only the requested task. Do not begin an unrequested next milestone.
-13. Update `prompt.txt` at the end of every completed task so the next session has the exact
-    branch/PR state, verified product state, known gaps, and one clearly specified next task.
-    Replace stale handoff facts instead of accumulating a chronological diary.
+12. Finish only the task marked `NEXT` in `docs/Tracker.md`. Do not begin an unrequested
+    next milestone. If nothing is marked `NEXT`, stop and ask the owner.
+13. Update `docs/Tracker.md` and `prompt.txt` in the same commit as every completed task, so
+    the next session has the exact branch/PR state, verified product state, known gaps, and
+    one clearly specified next task. Replace stale handoff facts instead of accumulating a
+    chronological diary. Acceptance criteria in the tracker are binding and may not be
+    narrowed to make a task easier to close.
 
 ## Git and GitHub
 

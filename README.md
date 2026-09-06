@@ -121,6 +121,7 @@ digest of what was removed rather than the value itself.
 
 | Document | What it answers |
 | --- | --- |
+| [`docs/Tracker.md`](docs/Tracker.md) | The agenda: every task, its acceptance criteria, and the one marked `NEXT` |
 | [`docs/ProductBrief.md`](docs/ProductBrief.md) | What TraceShield is, who it is for, the v0.1.0 boundary and acceptance criteria |
 | [`docs/Research.md`](docs/Research.md) | The evidence base: what telemetry actually carries, what already exists and where it stops |
 | [`docs/Architecture.md`](docs/Architecture.md) | Module structure, domain model, the pipeline and its invariants |

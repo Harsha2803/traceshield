@@ -238,3 +238,8 @@ Sources:
 3. Blob parts are base64 binary. v0.1 will drop blob content rather than attempt to scan it;
    scanning encoded binary needs its own design.
 4. Streaming and chunked span updates are out of scope for v0.1 and need a separate ADR.
+5. GitHub's token checksum is documented as a base62-encoded CRC32 in the trailing six
+   characters, but the blog post says only that it covers "the token" without stating
+   whether the prefix is included. Determining this needs either an authoritative
+   specification or a real token to test against. Until then GitHub tokens are matched on
+   prefix and charset alone, which is unambiguous enough on its own.

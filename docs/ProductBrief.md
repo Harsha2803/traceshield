@@ -104,6 +104,9 @@ each one stops:
   `mask_otel_spans` adapter, which is planned for v0.2.
 - Scanning inside base64 blob parts. v0.1 drops blob content instead.
 - Streaming or chunk-level redaction.
+- Scanning non-string leaves. A number is left alone rather than replaced, because swapping
+  a number for a placeholder changes the node's type and breaks consumers that validate the
+  payload against its schema. An identifier stored as a JSON number is therefore missed.
 
 ## 7. Acceptance criteria for v0.1.0
 
@@ -125,7 +128,11 @@ The release ships only when all of these are demonstrably true, with committed e
    secret longer than a configured threshold survives in the output, and that JSON structure
    is preserved.
 6. Checksum-verified rules reject values that match the shape but fail the checksum, proven
-   by tests for Luhn, IBAN mod-97 and GitHub token CRC32.
+   by tests for Luhn, IBAN mod-97 and Verhoeff. GitHub token CRC32 was dropped from this
+   criterion: the scheme is documented as a base62-encoded CRC32 in the trailing characters
+   but not precisely enough to know which portion it covers, and confirming a guess would
+   need a real token. A verifier that silently rejected genuine tokens would be worse than
+   none, so GitHub tokens are matched on their unambiguous prefix and charset instead.
 7. `traceshield scan <file>` exits non-zero on a fixture containing an unredacted secret and
    zero on its sanitized counterpart.
 8. Every redaction emits a finding carrying rule ID, attribute key, JSON path, action,

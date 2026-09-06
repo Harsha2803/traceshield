@@ -1,0 +1,121 @@
+[build-system]
+requires = ["hatchling>=1.27", "hatch-vcs>=0.4"]
+build-backend = "hatchling.build"
+
+[project]
+name = "traceshield"
+description = "Sanitize LLM and agent telemetry before it reaches an observability platform."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+authors = [{ name = "Cheella Sree Harsha", email = "cheellasreeharsha2803@gmail.com" }]
+keywords = [
+  "opentelemetry",
+  "llm-observability",
+  "pii-redaction",
+  "secrets-detection",
+  "ai-governance",
+  "telemetry",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: System Administrators",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Security",
+  "Topic :: System :: Monitoring",
+  "Typing :: Typed",
+]
+dynamic = ["version"]
+
+# The core engine is deliberately dependency-free (ADR 0001). A security library
+# should not impose a dependency graph on the process it is asked to protect.
+dependencies = []
+
+[project.urls]
+Source = "https://github.com/Harsha2803/traceshield"
+Issues = "https://github.com/Harsha2803/traceshield/issues"
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3",
+  "pytest-cov>=6.0",
+  "hypothesis>=6.122",
+  "mypy>=1.14",
+  "ruff>=0.9",
+  "bandit>=1.8",
+  "pip-audit>=2.7",
+]
+
+[tool.hatch.version]
+source = "vcs"
+raw-options = { version_scheme = "no-guess-dev", fallback_version = "0.0.0" }
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/traceshield"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+  "F", "E", "W",       # pyflakes, pycodestyle
+  "I",                 # import sorting
+  "UP",                # pyupgrade
+  "B",                 # bugbear
+  "C4",                # comprehensions
+  "SIM",               # simplify
+  "RET",               # returns
+  "PTH",               # pathlib over os.path
+  "DTZ",               # naive datetimes
+  "ASYNC",             # blocking calls in async
+  "S",                 # bandit-equivalent lints
+  "T20",               # stray print
+  "ERA",               # commented-out code
+  "ANN",               # missing annotations
+  "TID",               # banned/relative imports
+  "RUF",
+]
+ignore = [
+  # Long regex literals in the rule pack are clearer unsplit; line-length still applies.
+  "E501",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests assert, use synthetic credential fixtures, and do not need return annotations
+# on every helper for the strictness the source enforces.
+"tests/**" = ["S101", "S105", "S106", "ANN401"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "parents"
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_unreachable = true
+disallow_any_explicit = false
+files = ["src", "tests"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "--strict-markers --strict-config -ra"
+testpaths = ["tests"]
+xfail_strict = true
+
+[tool.coverage.run]
+source = ["traceshield"]
+branch = true
+
+[tool.coverage.report]
+# Domain policy coverage gate from docs/CodingStandards.md section 11.
+fail_under = 90
+show_missing = true
+exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:", "raise NotImplementedError"]
+
+[tool.bandit]
+exclude_dirs = ["tests"]

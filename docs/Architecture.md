@@ -13,11 +13,11 @@ OpenTelemetry, any vendor SDK, the filesystem or the clock.
 traceshield/
   core/                  pure domain. no I/O, no third-party imports, no OTel
     model.py             Finding, Decision, Action, Severity, RuleId, Confidence
-    policy.py            Policy, AttributeRule, DetectorRule; validation and loading
+    policy.py            Policy, AttributeRule, ActionRule, Budgets; the bundled default
     detectors/
       base.py            Detector protocol and DetectionSpan
       patterns.py        regex rule pack, compiled once per policy
-      verifiers.py       Luhn, IBAN mod-97, GitHub CRC32, Verhoeff
+      verifiers.py       Luhn, IBAN mod-97, Verhoeff, JWT header
       entropy.py         Shannon entropy scoring with charset-aware thresholds
       keyname.py         key-name heuristics for structured payloads
     walk.py              bounded structure-preserving traversal
@@ -25,8 +25,6 @@ traceshield/
     engine.py            Sanitizer: the one public entry point of the domain
     audit.py             AuditRecord and the sink protocol
     errors.py            exception hierarchy
-  policies/
-    default.yaml         bundled versioned default policy
   otel/                  adapter
     exporter.py          SanitizingSpanExporter
     attributes.py        OTel attribute value <-> domain value marshalling
@@ -57,8 +55,11 @@ Finding
 `Decision` pairs a finding with the policy rule that selected the action, so an auditor can
 reconstruct why a given action was taken from a given policy version.
 
-`Policy` is validated at load, rejects unknown fields, and carries a `version` that is
-recorded in every audit record. Scalar invariants — confidence bounds, byte limits,
+`Policy` is validated at construction, rejects duplicate and contradictory rules, and
+carries a `version` that is recorded in every finding. The bundled default is defined in
+Python rather than a YAML or TOML file: ADR 0001 requires the core to have no runtime
+dependencies, and no format parser ships with the standard library that would serve. Loading
+a policy from an external document arrives with the CLI slice, which needs it. Scalar invariants — confidence bounds, byte limits,
 non-negative budgets — live in the validated types rather than in call-site checks.
 
 ## 3. The sanitization pipeline
@@ -74,9 +75,12 @@ For one attribute value:
    and a bound breach is itself a finding that fails the value closed.
 3. **Walk.** Traverse the parsed structure. At every node, key-name heuristics can raise the
    sensitivity of the subtree. Leaves reach the detectors.
-4. **Detect.** Run detectors over each leaf. Detectors return non-overlapping
-   `DetectionSpan`s with a rule ID and confidence. Overlaps are resolved by
-   highest-confidence-then-longest-span, deterministically.
+4. **Detect.** Run detectors over each leaf. Detectors return `DetectionSpan`s carrying a
+   rule ID, category, severity and confidence. A rule with a checksum verifies its match
+   before reporting it; where a greedy quantifier may have absorbed a trailing character,
+   the rule declares how far it may retry shorter candidates, weighed against how easily its
+   checksum passes by chance. Overlaps are then resolved by highest confidence, then longest
+   span, then rule ID, deterministically.
 5. **Decide.** The policy maps rule ID and confidence to an action.
 6. **Redact.** Apply the action to the leaf, leaving structure intact.
 7. **Record.** Emit one finding per applied decision, and re-serialize the structure in the
@@ -112,9 +116,7 @@ TraceShield wraps the exporter instead; the reasoning and sources are in ADR 000
 
 ```python
 provider.add_span_processor(
-    BatchSpanProcessor(
-        SanitizingSpanExporter(OTLPSpanExporter(), policy=Policy.default())
-    )
+    BatchSpanProcessor(SanitizingSpanExporter(OTLPSpanExporter(), policy=Policy.default()))
 )
 ```
 

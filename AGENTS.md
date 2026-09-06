@@ -9,13 +9,16 @@ Read, in order:
 
 1. `prompt.txt` — the living handoff and current repository state
 2. `README.md`
-3. the current project brief/tracker once one exists
-4. `docs/CodingStandards.md`
-5. `docs/GitHubWorkflow.md`
-6. relevant ADRs and the files being changed
+3. `docs/ProductBrief.md` — the approved scope, v0.1.0 boundary and acceptance criteria
+4. `docs/Architecture.md` and `docs/ThreatModel.md`
+5. `docs/CodingStandards.md`
+6. `docs/GitHubWorkflow.md`
+7. `docs/adr/` and the files being changed
 
-The product scope and stack are not decided at bootstrap time. Do not silently make
-foundational product or architecture decisions. Record consequential decisions in an ADR.
+Product scope, stack, license, integration surface, detection approach and release process
+are settled in `docs/ProductBrief.md` and ADRs 0001-0005. Work outside the v0.1.0 boundary
+is not authorized. Do not silently make a new foundational decision or deviate from an
+existing one; write an ADR, and supersede rather than edit a decided one.
 
 ## Non-negotiable rules
 

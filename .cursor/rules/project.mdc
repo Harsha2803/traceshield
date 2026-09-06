@@ -7,8 +7,11 @@ Before editing this repository, read and follow:
 
 - `prompt.txt`
 - `AGENTS.md`
+- `docs/ProductBrief.md`
+- `docs/Architecture.md`
 - `docs/CodingStandards.md`
 - `docs/GitHubWorkflow.md`
 
-These files are canonical. The product brief and stack are not yet decided, so do not
-silently introduce foundational product or architecture decisions.
+These files are canonical. Scope, stack, license, integration surface, detection approach
+and release process are decided in the brief and `docs/adr/0001`-`0005`. Do not exceed the
+v0.1.0 boundary and do not deviate from an ADR without writing a superseding one.

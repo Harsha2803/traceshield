@@ -1,0 +1,63 @@
+# ADR 0004: Deterministic detection engine for v0.1
+
+- Status: Accepted
+- Date: 2026-09-06
+
+## Context
+
+Detection has to run synchronously on the telemetry export path, on a shared worker thread,
+for every exported span. That environment rules out most of the accuracy techniques
+available to an offline scanner.
+
+The prior art surveyed in `Research.md` §3 splits cleanly. Secret scanners are rule-first
+with entropy as a secondary signal and accept a triage queue: a published comparison found
+370 and 635 false positives for two leading tools on the same corpus. PII frameworks such as
+Presidio are extensible and NLP-backed, with reported out-of-the-box accuracy that needs
+tuning and a spaCy model download.
+
+## Decision
+
+The v0.1 engine is deterministic and dependency-free, combining four signals:
+
+1. **Pattern rules.** A versioned regex pack for named credential and identifier formats.
+2. **Checksum verifiers.** Where a format carries a checksum, it is verified before the
+   match is accepted: Luhn for payment cards, mod-97 for IBAN, CRC32 for GitHub token
+   suffixes, Verhoeff for Aadhaar. A shape match that fails its checksum is not a finding.
+3. **Shannon entropy.** Charset-aware thresholds for unnamed high-randomness strings,
+   applied only to leaves that survive cheaper filters.
+4. **Key-name heuristics.** In structured payloads, a key such as `api_key`, `password`,
+   `token`, `secret`, `authorization` or `credential` raises the sensitivity of its subtree.
+   This is what makes tool call arguments tractable, since their values are frequently
+   opaque strings that no pattern would catch but whose key states the intent.
+
+Confidence is a bounded value, raised by a passing checksum and by a corroborating key name,
+and the policy maps rule ID plus confidence to an action. Detection is not a boolean.
+
+ML and NER detection are deliberately excluded from v0.1 and remain a documented optional
+extra for a later release, behind the `Detector` protocol so no core change is needed to add
+one.
+
+## Alternatives considered
+
+**Ship the Presidio extra in v0.1.** Better recall on free-text names and addresses.
+Rejected: it pulls spaCy and a model download into a security library's install, adds
+material latency to a hot path, and roughly doubles the v0.1 test surface, for recall on a
+category the target users mostly do not have in tool arguments. Deferred, not discarded.
+
+**LLM-based classification of ambiguous spans.** Rejected outright. It is nondeterministic,
+adds cost and latency to telemetry export, and sends the exact data TraceShield exists to
+protect to another model provider.
+
+**Entropy only, no named rules.** Rejected: unusable false-positive rate, and it produces
+findings that name nothing, which defeats the audit record.
+
+## Consequences
+
+- Recall on implicit and contextual PII is limited. This is stated plainly in the README and
+  in `ThreatModel.md` T1 rather than glossed over.
+- The rule pack is a maintenance commitment. It is versioned, each rule carries a test with
+  positive and negative fixtures, and every fixture is synthetic.
+- Checksum verification is the main lever against alert fatigue and is what makes the default
+  policy safe to enable. Its tests are non-negotiable acceptance criteria.
+- Because detection is deterministic, the engine can be property-tested for idempotence and
+  non-leakage, which an ML detector would not permit.

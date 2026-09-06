@@ -29,12 +29,35 @@ Repository state at this handoff:
 
   - Branch `main` exists locally and on `origin`, with the bootstrap governance commit.
   - The GitHub repository `Harsha2803/traceshield` is private and no longer empty.
-  - Branch `docs/product-brief` carries the product brief, research, architecture, threat
-    model, roadmap, open-source readiness checklist and ADRs 0001-0005.
-  - No application code, dependency, CI workflow, package configuration or test suite exists
-    yet. Nothing described in the brief is implemented.
+  - PR #1 (`docs/product-brief`) carries the product brief, research, architecture, threat
+    model, roadmap, open-source readiness checklist and ADRs 0001-0005. Open, not merged.
+  - PR #2 (`feat/core-engine`) is stacked on PR #1 and carries the package, the core engine
+    and the quality gate. Merge #1 first; GitHub then retargets #2 onto `main`.
   - Repo-local author is `Cheella Sree Harsha <cheellasreeharsha2803@gmail.com>` and
     `origin` is `https://github.com/Harsha2803/traceshield.git`.
+
+What demonstrably works (verified 2026-09-06 by `make check`, exit 0):
+
+  - `Sanitizer.sanitize_attribute` and `sanitize_attributes` over strings, JSON-encoded
+    documents, mappings and sequences, preserving structure and emitting findings.
+  - Detection: 19-rule pattern pack, Luhn/IBAN mod-97/Verhoeff/JWT-header verifiers,
+    entropy scoring with UUID and timestamp exclusions, key-name escalation.
+  - Actions mask, partial, hash, drop; fail-closed on budget breach, detector failure and
+    unexpected internal error; idempotent output; deterministic ordering.
+  - Gate: ruff format and lint, mypy --strict, 249 tests, 99.64% coverage against a 90%
+    floor, bandit, pip-audit, and a successful sdist and wheel build.
+  - The README quickstart is executed by `tests/test_readme.py`, so the documented output
+    cannot drift from the code.
+
+Known gaps:
+
+  - No OpenTelemetry integration and no CLI yet. The engine is not wired to anything.
+  - Loading a policy from an external document is not implemented; only `Policy.default()`
+    and `Policy.build()` exist. It arrives with the CLI slice, which needs it.
+  - Non-string leaves are not scanned, so an identifier stored as a JSON number is missed.
+  - Base64 blob parts are dropped rather than scanned.
+  - No measured latency number exists. Do not put one anywhere until a committed benchmark
+    produces it.
 
 If the project owner says only "pick up TraceShield" or "continue":
 
@@ -52,10 +75,14 @@ If the project owner says only "pick up TraceShield" or "continue":
 
 Current next action:
 
-  - Slice 1 of v0.1.0 per docs/Roadmap.md: the core engine. Package scaffold and the full
-    quality gate ship together with a working `Sanitizer` that detects and redacts over a
-    bounded structure-preserving walk and emits findings. Scaffold alone is not a slice.
-  - Then slice 2 (SanitizingSpanExporter), slice 3 (CLI), slice 4 (release).
+  - Merge PR #1 then PR #2. Both are ready; the owner must click merge, because merging is
+    blocked for the agent in this environment.
+  - Then slice 2 of v0.1.0 per docs/Roadmap.md: `SanitizingSpanExporter`, an
+    `opentelemetry-sdk` `SpanExporter` that wraps a delegate exporter, sanitizes span and
+    event attribute values through the existing engine, and preserves span identity exactly
+    (ADR 0003, Architecture invariant 2). It ships under the `traceshield[otel]` extra with
+    its own adapter tests and an 80% coverage floor.
+  - Then slice 3 (CLI, which also brings policy loading) and slice 4 (release).
 
 Git and GitHub rules:
 
@@ -106,6 +133,10 @@ Canonical files currently present:
   - `docs/Roadmap.md`: committed v0.1.0 milestone and later intent.
   - `docs/OpenSourceReadiness.md`: checklist gating the public flip.
   - `docs/adr/`: ADRs 0001-0005.
+  - `Makefile`: `make setup` and `make check`; `check` is exactly what CI runs.
+  - `.github/workflows/ci.yml`: the gate on Python 3.10-3.13, actions pinned by commit SHA.
+  - `src/traceshield/core/`: the domain. `engine.py` is the entry point; read
+    `docs/Architecture.md` section 4 for the invariants its tests hold.
   - `docs/CodingStandards.md`: engineering, testing, privacy, and completion standards.
   - `docs/GitHubWorkflow.md`: identity, push, branch, PR, and merge protocol.
   - `docs/EmploymentSeparation.md`: personal-project and employer-IP boundary.

@@ -21,10 +21,29 @@ The v0.1 engine is deterministic and dependency-free, combining four signals:
 
 1. **Pattern rules.** A versioned regex pack for named credential and identifier formats.
 2. **Checksum verifiers.** Where a format carries a checksum, it is verified before the
-   match is accepted: Luhn for payment cards, mod-97 for IBAN, CRC32 for GitHub token
-   suffixes, Verhoeff for Aadhaar. A shape match that fails its checksum is not a finding.
+   match is accepted: Luhn for payment cards, mod-97 for IBAN, Verhoeff for Aadhaar, and a
+   base64url decode of the header for JWTs. A shape match that fails its checksum is not a
+   finding.
+
+   GitHub token CRC32 was considered and rejected. GitHub documents a base62-encoded CRC32
+   in the trailing characters, but not precisely enough to determine which portion of the
+   token it covers, and confirming a guess would require a real token. A verifier that
+   silently rejected genuine tokens would be strictly worse than no verifier, so GitHub
+   tokens are matched on their unambiguous prefix and charset.
+
+   Verification interacts with greedy matching: if a quantifier absorbs one character too
+   many, the checksum fails and a genuine value is exported intact. A property test found
+   exactly that. Rules therefore declare how far they may retry shorter candidates, weighed
+   against how easily the checksum passes by chance — Luhn accepts roughly one random input
+   in ten, so a payment card retries only at separator boundaries, while IBAN's mod-97
+   accepts roughly one in ninety-seven and can retry character by character.
 3. **Shannon entropy.** Charset-aware thresholds for unnamed high-randomness strings,
-   applied only to leaves that survive cheaper filters.
+   applied only to leaves that survive cheaper filters. The exclusions carry more weight
+   than the threshold: UUIDs, epoch timestamps, filesystem paths, URLs and dotted names are
+   rejected outright, because a trace is full of them and flagging them is the fastest way
+   to make a redaction tool worth disabling. The cost is a documented blind spot for
+   unpadded standard base64 containing several slashes, which no named rule and no key name
+   covers.
 4. **Key-name heuristics.** In structured payloads, a key such as `api_key`, `password`,
    `token`, `secret`, `authorization` or `credential` raises the sensitivity of its subtree.
    This is what makes tool call arguments tractable, since their values are frequently
